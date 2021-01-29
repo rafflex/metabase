@@ -82,3 +82,41 @@ export function typeCheck(cst, rootType) {
   }
   new TypeChecker().visit(cst);
 }
+
+export function compactSyntaxTree(node) {
+  if (!node) {
+    return;
+  }
+  let result = node;
+  const children = node.children;
+  switch (node.name) {
+    case "expression":
+    case "atomicExpression":
+    case "boolean":
+    case "booleanExpression":
+    case "booleanUnaryExpression":
+      children.expression = children.expression.map(n => {
+        return compactSyntaxTree(n);
+      });
+      if (children.expression.length === 1) {
+        result = children.expression[0];
+      }
+      break;
+    case "additionExpression":
+    case "multiplicationExpression":
+    case "logicalAndExpression":
+    case "logicalOrExpression":
+    case "relationalExpression":
+      children.operands = children.operands.map(n => {
+        return compactSyntaxTree(n);
+      });
+      if (children.operands.length === 1) {
+        result = children.operands[0];
+      }
+      break;
+    default:
+      break;
+  }
+
+  return result;
+}
